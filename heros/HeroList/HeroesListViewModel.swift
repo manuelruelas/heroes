@@ -53,14 +53,12 @@ class HeroesListViewModel: ObservableObject,Identifiable {
             }).store(in: &disposables)
     }
     func searchHero(by name:String){
-        print("search \(name)")
         heroRepository
             .searchHero(by: name)
             .sink(receiveCompletion: {value in
-                print(value)
+                self.status = .ready
             },
                   receiveValue: { heroes in
-                    print(heroes)
                     self.status = .ready
                     self.dataSource.removeAll()
                     self.dataSource.append(contentsOf: heroes.map(HeroRowModel.init))

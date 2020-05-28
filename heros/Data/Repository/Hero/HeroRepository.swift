@@ -26,10 +26,8 @@ class HeroRepository{
         return Future{ promise in
             self.heroService.searchHero(byName: name)
                 .sink(receiveCompletion: { value in
-                    print(value)
                 },
                       receiveValue: { searchResponse in
-                        print(searchResponse.results)
                         promise(.success(searchResponse.results))
                         
                 })
