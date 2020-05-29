@@ -7,14 +7,18 @@
 //
 
 import Foundation
+import RealmSwift
 
-class Hero: Decodable {
-    var id:String
-    var name: String
-    var powerstats: Powerstats?
-    var biography: Biography?
-    var image: Img?
+class Hero:Object, Decodable {
+    @objc dynamic var id:String
+    @objc dynamic var name: String
+    @objc dynamic var powerstats: Powerstats?
+    @objc dynamic var biography: Biography?
+    @objc dynamic var image: Img?
     
+    override static func primaryKey() -> String? {
+      return "id"
+    }
    
     private enum CodingKeys:String,CodingKey{
         case id
@@ -25,8 +29,8 @@ class Hero: Decodable {
     }
 }
 
-class Img: Decodable {
-     var url: String
+class Img:Object, Decodable {
+    @objc dynamic var url: String
     
     private enum CodingKeys:String,CodingKey{
         case url
@@ -34,13 +38,13 @@ class Img: Decodable {
 }
 
 // MARK: - Biography
-class Biography: Decodable {
-     var fullName:String
-     var alterEgos: String
-     var placeOfBirth:String
-     var firstAppearance: String
-     var publisher:String
-     var alignment: String
+class Biography:Object, Decodable {
+     @objc dynamic var fullName:String
+     @objc dynamic var alterEgos: String
+     @objc dynamic var placeOfBirth:String
+     @objc dynamic var firstAppearance: String
+     @objc dynamic var publisher:String
+     @objc dynamic var alignment: String
     
     enum CodingKeys: String, CodingKey{
         case fullName = "full-name"
@@ -54,13 +58,13 @@ class Biography: Decodable {
 
 
 // MARK: - Powerstats
-class Powerstats: Decodable {
-     var intelligence: String
-     var strength:String
-     var speed: String
-     var durability: String
-     var power: String
-     var combat: String
+class Powerstats:Object, Decodable {
+     @objc dynamic var intelligence: String
+     @objc dynamic var strength:String
+     @objc dynamic var speed: String
+     @objc dynamic var durability: String
+     @objc dynamic var power: String
+     @objc dynamic var combat: String
     
     enum CodingKeys:String,CodingKey{
         case intelligence
