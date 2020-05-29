@@ -13,7 +13,7 @@ class HeroesListViewModel: ObservableObject,Identifiable {
     private let heroRepository:HeroRepository
     
     @Published var hero: String = ""
-    @Published var dataSource:[HeroRowModel] = []
+    @Published var heroes:[HeroRowModel] = []
     var status: StatusEnum = .loading
     private var disposables = Set<AnyCancellable>()
     private var scheduler: DispatchQueue  = DispatchQueue(label: "HeroesListViewModel")
@@ -28,7 +28,7 @@ class HeroesListViewModel: ObservableObject,Identifiable {
             .debounce(for: .seconds(0.5), scheduler: scheduler)
         .receive(on: DispatchQueue.main)
         .sink(receiveValue:{ name in
-            self.dataSource.removeAll()
+            self.heroes.removeAll()
             if(name.isEmpty){
                 self.fetchHeroList()
             }else{
@@ -39,19 +39,20 @@ class HeroesListViewModel: ObservableObject,Identifiable {
     }
     
     func fetchHeroList(){
-        heroRepository.fetchMoreHeroes(skip: dataSource.count + 1)
+        heroRepository.getHeroes(skip: heroes.count,limit: 10)
             .sink(receiveCompletion:{value in
                 self.status = .ready
             },
                 receiveValue:{ heroes in
                     self.status = .ready
-                    self.dataSource.append(contentsOf: heroes.sorted(by: { (prvHero, hero) -> Bool in
+                    self.heroes.append(contentsOf: heroes.sorted(by: { (prvHero, hero) -> Bool in
                         return (Int(prvHero.id) ?? 0) < (Int(hero.id) ?? 0)
                     }).map(HeroRowModel.init))
                     
             }).store(in: &disposables)
     }
-    func fetchHeroHorizontal(){}
+    func fetchHeroesHorizontal(){}
+    
     func searchHero(by name:String){
         heroRepository
             .searchHero(by: name)
@@ -60,13 +61,13 @@ class HeroesListViewModel: ObservableObject,Identifiable {
             },
               receiveValue: { heroes in
                     self.status = .ready
-                    self.dataSource.removeAll()
-                    self.dataSource.append(contentsOf: heroes.map(HeroRowModel.init))
+                    self.heroes.removeAll()
+                    self.heroes.append(contentsOf: heroes.map(HeroRowModel.init))
             }).store(in: &disposables)
     }
     
     func loadMore(id:Int) -> Void {
-        if(status == .ready && dataSource.count == id){
+        if(status == .ready && id == heroes.count){
             status = .loading
             fetchHeroList()
         }

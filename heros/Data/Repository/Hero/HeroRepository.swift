@@ -11,6 +11,7 @@ import Combine
 
 class HeroRepository{
     let heroService:HeroService = HeroService()
+    let heroLocal:HeroLocal = HeroLocal()
     private var disposables = Set<AnyCancellable>()
     
     func getHero(id:Int)-> Future<Hero,Error>{
@@ -36,14 +37,29 @@ class HeroRepository{
             
     }
     
-    func fetchMoreHeroes(skip:Int) -> Future<[Hero],Error >{
-        let requests = (skip...skip+10).compactMap(heroService.getHero(byId:))
-        
+    func getHeroes(skip:Int, limit:Int) -> Future<[Hero],Error >{
         return Future<[Hero], Error>{ promise in
-            Publishers.MergeMany(requests)
-                .collect()
-                .sink(receiveCompletion: { _ in},receiveValue: {promise(.success($0))})
-                .store(in: &self.disposables)
+            var localHeroes = self.heroLocal.getHeroes(skip: skip, limit: limit)
+            if localHeroes.count == limit {
+                promise(.success(localHeroes))
+            } else{ //fetch remaining remote heroes, save and return
+                let remaining = limit - localHeroes.count
+                if(remaining > 0){
+                    let requests = (skip+1...skip+remaining).compactMap(self.heroService.getHero(byId:))
+                    Publishers.MergeMany(requests)
+                    .collect()
+                        .sink(receiveCompletion: { _ in},
+                              receiveValue: {heroes in
+                                self.heroLocal.saveHeroes(heroes: heroes)
+                                localHeroes.append(contentsOf: heroes)
+                                promise(.success(localHeroes))
+                        })
+                    .store(in: &self.disposables)
+                }else{
+                    return promise(.success([]))
+                }
+                
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ struct HeroesListView: View {
                 SearchBar(text: $heroesViewModel.hero)
                 circlesSection
                 Divider()
-                if heroesViewModel.dataSource.isEmpty{
+                if heroesViewModel.heroes.isEmpty{
                     emptySection
                 } else{
                     heroesSection
@@ -30,7 +30,7 @@ struct HeroesListView: View {
             .listStyle(PlainListStyle())
             .navigationBarTitle("Heroes")
         }.onAppear {
-            self.heroesViewModel.fetchHero()
+            self.heroesViewModel.fetchHeroList()
         }
         
     }
@@ -41,7 +41,7 @@ private extension HeroesListView{
         Section{
             ScrollView(.horizontal, content: {
                 HStack{
-                    ForEach(self.heroesViewModel.dataSource, content: circleItem.init(hero:))
+                    ForEach(self.heroesViewModel.heroes, content: circleItem.init(hero:))
                 }.frame(height:130)
                 
                 }).padding()
@@ -51,7 +51,7 @@ private extension HeroesListView{
     
     var heroesSection: some View {
       
-        List(heroesViewModel.dataSource){ hero in
+        List(heroesViewModel.heroes){ hero in
             HeroRowView.init(viewModel: hero)
                 .onAppear{
                     self.heroesViewModel.loadMore(id: Int(hero.id) ?? 1)
